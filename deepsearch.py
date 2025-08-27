@@ -8,15 +8,9 @@ vertexai.init(project="your-gcp-project-id", location="us-central1")
 
 class DeepSearchAgent:
     def __init__(self):
-        # Configure grounding tool
-        self.grounding_tool = Tool.from_google_search_retrieval(
-            grounding.GoogleSearchRetrieval(disable_attribution=False)
-        )
-        
-        # Initialize model with grounding tool
+        # Initialize model with google search grounding
         self.model = GenerativeModel(
-            "gemini-1.5-pro",
-            tools=[self.grounding_tool]
+            "gemini-1.5-pro"
         )
     
     def deep_search(self, query, search_depth=5):
@@ -40,7 +34,10 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 1: Performing basic search...")
-        basic_response = self.model.generate_content(basic_prompt)
+        basic_response = self.model.generate_content(
+            basic_prompt,
+            tools=[grounding.GoogleSearchRetrieval()]
+        )
         
         # Stage 2: In-depth analysis search
         deep_prompt = f"""
@@ -57,7 +54,10 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 2: Conducting in-depth analysis search...")
-        deep_response = self.model.generate_content(deep_prompt)
+        deep_response = self.model.generate_content(
+            deep_prompt,
+            tools=[grounding.GoogleSearchRetrieval()]
+        )
         
         # Stage 3: Final comprehensive report generation
         final_prompt = f"""
@@ -87,7 +87,10 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 3: Generating final comprehensive report...")
-        final_response = self.model.generate_content(final_prompt)
+        final_response = self.model.generate_content(
+            final_prompt,
+            tools=[grounding.GoogleSearchRetrieval()]
+        )
         
         return {
             "basic_search": basic_response.text,
@@ -179,7 +182,10 @@ def run_custom_deep_search(topic, perspectives=None):
         Ensure all sources are clearly cited and information is current and accurate.
         """
         
-        response = agent.model.generate_content(custom_prompt)
+        response = agent.model.generate_content(
+            custom_prompt,
+            tools=[grounding.GoogleSearchRetrieval()]
+        )
         
         result = {
             "custom_analysis": response.text,
