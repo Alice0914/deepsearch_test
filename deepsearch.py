@@ -1,6 +1,6 @@
 import vertexai
 from vertexai.generative_models import GenerativeModel, Tool
-from vertexai.preview.generative_models import grounding
+from vertexai.generative_models import grounding
 import json
 
 # Initialize Vertex AI
@@ -9,8 +9,13 @@ vertexai.init(project="your-gcp-project-id", location="us-central1")
 class DeepSearchAgent:
     def __init__(self):
         # Initialize model with google search grounding
+        self.google_search_tool = Tool.from_google_search_retrieval(
+            grounding.GoogleSearchRetrieval()
+        )
+        
         self.model = GenerativeModel(
-            "gemini-1.5-pro"
+            "gemini-1.5-pro",
+            tools=[self.google_search_tool]
         )
     
     def deep_search(self, query, search_depth=5):
@@ -34,10 +39,7 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 1: Performing basic search...")
-        basic_response = self.model.generate_content(
-            basic_prompt,
-            tools=[grounding.GoogleSearchRetrieval()]
-        )
+        basic_response = self.model.generate_content(basic_prompt)
         
         # Stage 2: In-depth analysis search
         deep_prompt = f"""
@@ -54,10 +56,7 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 2: Conducting in-depth analysis search...")
-        deep_response = self.model.generate_content(
-            deep_prompt,
-            tools=[grounding.GoogleSearchRetrieval()]
-        )
+        deep_response = self.model.generate_content(deep_prompt)
         
         # Stage 3: Final comprehensive report generation
         final_prompt = f"""
@@ -87,10 +86,7 @@ class DeepSearchAgent:
         """
         
         print("🔍 Stage 3: Generating final comprehensive report...")
-        final_response = self.model.generate_content(
-            final_prompt,
-            tools=[grounding.GoogleSearchRetrieval()]
-        )
+        final_response = self.model.generate_content(final_prompt)
         
         return {
             "basic_search": basic_response.text,
